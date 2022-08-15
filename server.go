@@ -3,14 +3,18 @@ package main
 import (
 	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 const port = "8080"
 
 func main() {
-	http.HandleFunc("/", helloGoHandler)
+	r := mux.NewRouter()
 
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	r.HandleFunc("/", helloGoHandler)
+
+	log.Fatal(http.ListenAndServe(":"+port, r))
 }
 
 func helloGoHandler(w http.ResponseWriter, r *http.Request) {
