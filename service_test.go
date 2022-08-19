@@ -16,9 +16,9 @@ func TestPut(t *testing.T) {
 		val      interface{}
 	)
 
-	defer delete(store, key)
+	defer delete(store.m, key)
 
-	if _, contains = store[key]; contains {
+	if _, contains = store.m[key]; contains {
 		t.Error("key/value already exists")
 	}
 
@@ -27,7 +27,7 @@ func TestPut(t *testing.T) {
 		t.Error(err)
 	}
 
-	val, contains = store[key]
+	val, contains = store.m[key]
 	if !contains {
 		t.Error("create failed")
 	}
@@ -47,7 +47,7 @@ func TestGet(t *testing.T) {
 		val interface{}
 	)
 
-	defer delete(store, key)
+	defer delete(store.m, key)
 
 	val, err = Get(key)
 	if err == nil {
@@ -57,7 +57,7 @@ func TestGet(t *testing.T) {
 		t.Error("unexpected error:", err)
 	}
 
-	store[key] = value
+	store.m[key] = value
 
 	val, err = Get(key)
 	if err != nil {
@@ -79,16 +79,16 @@ func TestDelete(t *testing.T) {
 		err      error
 	)
 
-	defer delete(store, key)
+	defer delete(store.m, key)
 
-	store[key] = value
+	store.m[key] = value
 
 	err = Delete(key)
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, contains = store[key]
+	_, contains = store.m[key]
 	if contains {
 		t.Error("delete failed")
 	}
