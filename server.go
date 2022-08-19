@@ -10,14 +10,14 @@ import (
 )
 
 const port = "8080"
-const mainUrlPath = "/v1/{key}"
+const mainURLPath = "/v1/{key}"
 
 func main() {
 	r := mux.NewRouter()
 
-	r.HandleFunc(mainUrlPath, keyValuePutHandler).Methods(http.MethodPut)
-	r.HandleFunc(mainUrlPath, keyValueGetHandler).Methods(http.MethodGet)
-	r.HandleFunc(mainUrlPath, keyValueDeleteHandler).Methods(http.MethodDelete)
+	r.HandleFunc(mainURLPath, keyValuePutHandler).Methods(http.MethodPut)
+	r.HandleFunc(mainURLPath, keyValueGetHandler).Methods(http.MethodGet)
+	r.HandleFunc(mainURLPath, keyValueDeleteHandler).Methods(http.MethodDelete)
 
 	log.Printf("Server started at port %v", port)
 	log.Fatal(http.ListenAndServe(":"+port, r))
