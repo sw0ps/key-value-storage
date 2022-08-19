@@ -15,13 +15,13 @@ var store = struct {
 // errors variables
 
 var (
-	// Using for no such key
+	// ErrorNoSuchKey using for no such key
 	ErrorNoSuchKey = errors.New("no such key")
 )
 
 // functions
 
-// Add key to storage
+// Put key to storage
 func Put(key, value string) error {
 	store.Lock()
 	store.m[key] = value
@@ -30,7 +30,7 @@ func Put(key, value string) error {
 	return nil
 }
 
-// Read key from storage
+// Get key from storage
 func Get(key string) (string, error) {
 	store.RLock()
 	value, ok := store.m[key]
