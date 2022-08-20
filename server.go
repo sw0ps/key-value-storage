@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -11,8 +12,17 @@ import (
 
 const port = "8080"
 const mainURLPath = "/v1/{key}"
+const transactFile = "log_transaction.log"
+
+var logger TransactionLogger
 
 func main() {
+
+	err := initializaTransactionLog()
+	if err != nil {
+		panic(err)
+	}
+
 	r := mux.NewRouter()
 
 	r.HandleFunc(mainURLPath, keyValuePutHandler).Methods(http.MethodPut)
@@ -21,6 +31,35 @@ func main() {
 
 	log.Printf("Server started at port %v", port)
 	log.Fatal(http.ListenAndServe(":"+port, r))
+}
+
+func initializaTransactionLog() error {
+	var err error
+
+	logger, err = NewFileTransactionLogger(transactFile)
+	if err != nil {
+		return fmt.Errorf("failed to create event logger: %w", err)
+	}
+
+	events, errors := logger.ReadEvents()
+	e, ok := Event{}, true
+
+	for ok && err == nil {
+		select {
+		case err, ok = <-errors:
+		case e, ok = <-events:
+			switch e.EventType {
+			case EventDelete:
+				err = Delete(e.Key)
+			case EventPut:
+				err = Put(e.Key, e.Value)
+			}
+		}
+	}
+
+	logger.Run()
+
+	return err
 }
 
 // keyValuePutHandler Example:
@@ -67,6 +106,8 @@ func keyValueGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger.WritePut(key, value)
+
 	w.Write([]byte(value)) // write value to response
 }
 
@@ -83,4 +124,7 @@ func keyValueDeleteHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	logger.WriteDelete(key)
+
 }
