@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"net/url"
 	"os"
 )
 
@@ -48,7 +49,7 @@ func NewFileTransactionLogger(filename string) (TransactionLogger, error) {
 }
 
 func (l *FileTransactionLogger) WritePut(key, value string) {
-	l.events <- Event{EventType: EventPut, Key: key, Value: value}
+	l.events <- Event{EventType: EventPut, Key: key, Value: url.QueryEscape(value)}
 }
 
 func (l *FileTransactionLogger) WriteDelete(key string) {

@@ -6,13 +6,15 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 )
 
 const port = "8080"
 const mainURLPath = "/v1/{key}"
-const transactFile = "log_transaction.log"
+const transactPath = "logs/"
+const transactFile = "transaction.log"
 
 var logger TransactionLogger
 
@@ -36,7 +38,14 @@ func main() {
 func initializaTransactionLog() error {
 	var err error
 
-	logger, err = NewFileTransactionLogger(transactFile)
+	if _, err := os.Stat(transactPath); os.IsNotExist(err) {
+		err := os.Mkdir(transactPath, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+
+	logger, err = NewFileTransactionLogger(transactPath + transactFile)
 	if err != nil {
 		return fmt.Errorf("failed to create event logger: %w", err)
 	}
@@ -84,6 +93,8 @@ func keyValuePutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger.WritePut(key, string(value))
+
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -106,8 +117,6 @@ func keyValueGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.WritePut(key, value)
-
 	w.Write([]byte(value)) // write value to response
 }
 
@@ -126,5 +135,4 @@ func keyValueDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger.WriteDelete(key)
-
 }
